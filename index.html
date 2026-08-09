@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0d0b1a">
+<title>My Kindroid Companion</title>
+<meta name="description" content="A personal chat page for my Kindroid AI companion.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0b1a; --panel:#16132a; --panel2:#1d1836; --line:#2c2650;
+  --violet:#8b5cf6; --violet-light:#a78bfa; --pink:#f472b6;
+  --text:#f1eefb; --text-dim:#a79fc9; --text-faint:#6b6491;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:radial-gradient(circle at 20% -10%,#241d47 0%,var(--bg) 55%);
+  color:var(--text); font-family:Inter,system-ui,sans-serif;
+  display:flex; align-items:center; justify-content:center; padding:24px;
+}
+h1,h2,.brand{font-family:Sora,system-ui,sans-serif}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-thumb{background:#3a3364;border-radius:8px}
+
+.card{
+  width:100%; max-width:460px; height:min(760px,92dvh);
+  background:linear-gradient(180deg,var(--panel),var(--panel2));
+  border:1px solid var(--line); border-radius:24px;
+  display:flex; flex-direction:column; overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(139,92,246,.08);
+}
+
+.header{
+  flex:none; display:flex; align-items:center; gap:14px;
+  padding:22px 22px 18px; border-bottom:1px solid var(--line);
+  background:linear-gradient(135deg,rgba(139,92,246,.16),transparent 60%);
+}
+.avatar{
+  flex:none; width:52px; height:52px; border-radius:50%;
+  background:linear-gradient(135deg,var(--violet),var(--pink));
+  display:flex; align-items:center; justify-content:center;
+  font:700 22px Sora,sans-serif; color:#fff;
+  box-shadow:0 6px 20px rgba(139,92,246,.4);
+}
+.header .titles{flex:1; min-width:0}
+.brand{font-size:17px; font-weight:700; color:var(--text)}
+.status{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-dim); margin-top:3px}
+.dot{width:7px; height:7px; border-radius:50%; background:#4ade80; box-shadow:0 0 8px #4ade80}
+
+.msgs{flex:1; overflow-y:auto; padding:20px; display:flex; flex-direction:column; gap:12px; min-height:0}
+.msg{max-width:80%; padding:11px 15px; border-radius:16px; font-size:14px; line-height:1.55; white-space:pre-wrap}
+.msg.bot{align-self:flex-start; background:var(--panel2); border:1px solid var(--line); color:var(--text); border-bottom-left-radius:4px}
+.msg.user{align-self:flex-end; background:linear-gradient(135deg,var(--violet),#7c3aed); color:#fff; border-bottom-right-radius:4px}
+.msg.error{align-self:center; background:rgba(244,63,94,.12); border:1px solid rgba(244,63,94,.35); color:#fda4af; font-size:12.5px; text-align:center; max-width:92%}
+.typing{align-self:flex-start; display:flex; gap:4px; padding:13px 16px; background:var(--panel2); border:1px solid var(--line); border-radius:16px; border-bottom-left-radius:4px}
+.typing span{width:6px; height:6px; border-radius:50%; background:var(--text-faint); animation:bounce 1.2s infinite}
+.typing span:nth-child(2){animation-delay:.15s} .typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-4px);opacity:1}}
+
+.composer{flex:none; display:flex; gap:10px; padding:16px; border-top:1px solid var(--line)}
+.composer input{
+  flex:1; background:var(--bg); border:1px solid var(--line); border-radius:999px;
+  padding:13px 18px; font-size:14px; color:var(--text); outline:none; font-family:inherit;
+}
+.composer input::placeholder{color:var(--text-faint)}
+.composer input:focus{border-color:var(--violet)}
+.composer button{
+  flex:none; width:46px; height:46px; border-radius:50%; border:0; cursor:pointer;
+  background:linear-gradient(135deg,var(--violet),var(--pink)); color:#fff;
+  display:flex; align-items:center; justify-content:center;
+}
+.composer button:disabled{opacity:.45; cursor:not-allowed}
+.footnote{flex:none; text-align:center; font-size:10.5px; color:var(--text-faint); padding:0 16px 14px}
+</style>
+</head>
+<body>
+
+<!-- ======== CUSTOMIZE ME ========
+Edit the CONFIG object in the <script> below (companionName, tagline,
+avatarInitial, greeting) to personalize this page for your persona.
+No other file needs to change for basic personalization. -->
+
+<div class="card">
+  <div class="header">
+    <div class="avatar" id="avatar">K</div>
+    <div class="titles">
+      <div class="brand" id="brandName">My Companion</div>
+      <div class="status"><span class="dot"></span><span id="statusText">Online</span></div>
+    </div>
+  </div>
+  <div class="msgs" id="msgs"></div>
+  <div class="composer">
+    <input type="text" id="input" placeholder="Type a message…" autocomplete="off">
+    <button type="button" id="send" aria-label="Send">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"></path><path d="M22 2l-7 20-4-9-9-4 20-7z"></path></svg>
+    </button>
+  </div>
+  <div class="footnote">Powered by Kindroid · this page never sees your API key</div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ---- CUSTOMIZE ME ----
+  var CONFIG = {
+    companionName: 'My Companion',      // TODO: your Kindroid persona's name
+    avatarInitial: 'K',                 // TODO: a letter/emoji for the avatar
+    greeting: "Hey, it's me! What's on your mind?", // TODO: first message shown
+    endpoint: '/api/kindroid-chat'
+  };
+  // -----------------------
+
+  document.getElementById('brandName').textContent = CONFIG.companionName;
+  document.getElementById('avatar').textContent = CONFIG.avatarInitial;
+  document.title = CONFIG.companionName + ' — Kindroid';
+
+  var sessionId = (function () {
+    var k = 'kindroid_session_id';
+    var v = sessionStorage.getItem(k);
+    if (!v) {
+      v = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'guest-' + Math.random().toString(36).slice(2);
+      sessionStorage.setItem(k, v);
+    }
+    return v;
+  })();
+
+  var history = []; // {username, text, timestamp}
+  var msgsEl = document.getElementById('msgs');
+  var inputEl = document.getElementById('input');
+  var sendBtn = document.getElementById('send');
+  var statusEl = document.getElementById('statusText');
+
+  function addMsg(role, text) {
+    var d = document.createElement('div');
+    d.className = 'msg ' + role;
+    d.textContent = text;
+    msgsEl.appendChild(d);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+    return d;
+  }
+
+  function showTyping() {
+    var d = document.createElement('div');
+    d.className = 'typing';
+    d.id = 'typing-indicator';
+    d.innerHTML = '<span></span><span></span><span></span>';
+    msgsEl.appendChild(d);
+    msgsEl.scrollTop = msgsEl.scrollHeight;
+  }
+  function hideTyping() {
+    var d = document.getElementById('typing-indicator');
+    if (d) d.remove();
+  }
+
+  addMsg('bot', CONFIG.greeting);
+
+  function send() {
+    var text = inputEl.value.trim();
+    if (!text) return;
+    inputEl.value = '';
+    sendBtn.disabled = true;
+    addMsg('user', text);
+
+    showTyping();
+    fetch(CONFIG.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history: history, sessionId: sessionId })
+    })
+      .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+      .then(function (res) {
+        hideTyping();
+        if (!res.ok || res.data.error) {
+          addMsg('error', res.data.error || 'Something went wrong — try again.');
+          return;
+        }
+        history.push({ username: sessionId, text: text });
+        history.push({ username: CONFIG.companionName, text: res.data.reply });
+        addMsg('bot', res.data.reply);
+      })
+      .catch(function () {
+        hideTyping();
+        addMsg('error', "Couldn't reach the server — check your connection and try again.");
+      })
+      .finally(function () {
+        sendBtn.disabled = false;
+        inputEl.focus();
+      });
+  }
+
+  sendBtn.addEventListener('click', send);
+  inputEl.addEventListener('keydown', function (e) { if (e.key === 'Enter') send(); });
+})();
+</script>
+</body>
+</html>
